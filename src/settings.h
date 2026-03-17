@@ -46,6 +46,7 @@ static constexpr uint8_t INT_500MS = 0x04;
 static constexpr uint8_t INT_600MS = 0x05;
 
 // Lux 计算常数（TSL2591 官方/通用库常用参数）
+// https://github.com/adafruit/Adafruit_TSL2591_Library/blob/master/Adafruit_TSL2591.h
 static constexpr float LUX_DF = 408.0f;
 static constexpr float LUX_COEFB = 1.64f;
 static constexpr float LUX_COEFC = 0.59f;
