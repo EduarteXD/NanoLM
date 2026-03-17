@@ -11,9 +11,10 @@
 #include "../core/system_diagnostics.h"
 #include "../settings.h"
 #include "../components/epd_component.h"
+#include "../components/ble_component.h"
 #include "../components/led_status_component.h"
 #include "../components/sensor_component.h"
-#include "../components/sensor_task.h"
+#include "../tasks/sensor_sampling_task.h"
 #include "../components/web_component.h"
 #include "../components/wifi_component.h"
 #include "app_runtime.h"
@@ -57,7 +58,8 @@ void beginSensorPipeline() {
 
   TaskHandle_t handle = nullptr;
   const BaseType_t ok =
-      xTaskCreate(sensorTask, "sensorTask", 4096, nullptr, 1, &handle);
+      xTaskCreate(sensorSamplingTask, "sensorSamplingTask", 4096, nullptr, 1,
+                  &handle);
   if (ok != pdPASS) {
     Serial.println("创建采样任务失败");
     storeSensorData(makeSensorErrorData());
@@ -65,7 +67,7 @@ void beginSensorPipeline() {
     return;
   }
 
-  AppRuntime::setSensorTaskHandle(handle);
+  AppRuntime::setSensorSamplingTaskHandle(handle);
 }
 
 void beginNetworkPipeline() {
@@ -80,6 +82,20 @@ void beginNetworkPipeline() {
   Serial.println(WiFi.softAPIP());
 }
 
+void beginBlePipeline() {
+  if (!ENABLE_BLE) {
+    Serial.println("BLE 已禁用");
+    return;
+  }
+
+  if (!BleComponent::begin()) {
+    Serial.println("BLE 初始化失败，iOS 客户端暂不可用");
+    return;
+  }
+
+  Serial.println("BLE 已启动，等待 iOS 客户端连接");
+}
+
 }  // namespace
 
 void setup() {
@@ -90,9 +106,6 @@ void setup() {
 
   printIoTable();
   beginStatusLed();
-
-  Serial.print("网络目标模式: ");
-  Serial.println(targetWifiModeText());
 
   if (!beginRuntime()) {
     return;
@@ -112,10 +125,12 @@ void setup() {
 
   beginSensorPipeline();
   beginNetworkPipeline();
+  beginBlePipeline();
 }
 
 void loop() {
   AppRuntime::server().handleClient();
+  BleComponent::poll();
   LedStatusComponent::setNetworkState(AppRuntime::wifiApMode());
   LedStatusComponent::update();
   vTaskDelay(pdMS_TO_TICKS(2));

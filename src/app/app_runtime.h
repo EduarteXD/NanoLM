@@ -18,8 +18,8 @@ WebServer &server();
 SemaphoreHandle_t sensorMutex();
 SemaphoreHandle_t configMutex();
 
-TaskHandle_t sensorTaskHandle();
-void setSensorTaskHandle(TaskHandle_t handle);
+TaskHandle_t sensorSamplingTaskHandle();
+void setSensorSamplingTaskHandle(TaskHandle_t handle);
 
 bool wifiApMode();
 void setWifiApMode(bool apMode);

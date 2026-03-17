@@ -8,11 +8,16 @@
 
 // -------------------- 功能开关 --------------------
 static constexpr bool ENABLE_EPD_SELF_TEST_ON_BOOT = true;
+static constexpr bool ENABLE_BLE = true;
 
 // -------------------- WiFi 配置 --------------------
 // 仅 AP 模式。
 static const char *WIFI_AP_SSID = "NanoLm";
 static const char *WIFI_AP_PASS = "12345678";
+
+// -------------------- BLE 配置 --------------------
+static const char *BLE_DEVICE_NAME = "NanoLm";
+static constexpr uint8_t BLE_PROTOCOL_VERSION = 1;
 
 // -------------------- TSL2591 寄存器 --------------------
 static constexpr uint8_t TSL2591_CMD = 0xA0;  // 命令位 + 普通寄存器访问
@@ -46,8 +51,8 @@ static constexpr float LUX_COEFB = 1.64f;
 static constexpr float LUX_COEFC = 0.59f;
 static constexpr float LUX_COEFD = 0.86f;
 
-// -------------------- 摄影测光默认参数 --------------------
-// 入射式测光常用：EV100 = log2((lux * 100) / C)
+// -------------------- 测光默认参数 --------------------
+// EV100 = log2((lux * 100) / C)
 static constexpr float DEFAULT_CALIB_C = 250.0f;
 static constexpr uint16_t DEFAULT_ISO = 100;
 static constexpr float DEFAULT_APERTURE = 2.8f;

@@ -17,7 +17,7 @@ MeterConfig sMeterConfig = {
 
 SemaphoreHandle_t sSensorMutex = nullptr;
 SemaphoreHandle_t sConfigMutex = nullptr;
-TaskHandle_t sSensorTaskHandle = nullptr;
+TaskHandle_t sSensorSamplingTaskHandle = nullptr;
 WebServer sServer(80);
 bool sWifiApMode = false;
 
@@ -53,12 +53,12 @@ SemaphoreHandle_t configMutex() {
   return sConfigMutex;
 }
 
-TaskHandle_t sensorTaskHandle() {
-  return sSensorTaskHandle;
+TaskHandle_t sensorSamplingTaskHandle() {
+  return sSensorSamplingTaskHandle;
 }
 
-void setSensorTaskHandle(TaskHandle_t handle) {
-  sSensorTaskHandle = handle;
+void setSensorSamplingTaskHandle(TaskHandle_t handle) {
+  sSensorSamplingTaskHandle = handle;
 }
 
 bool wifiApMode() {

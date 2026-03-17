@@ -6,6 +6,11 @@
 
 namespace MeterComponent {
 
+static ExposureResult invalidExposureResult() {
+  ExposureResult result = {false, NAN, NAN, NAN, NAN, NAN, NAN, NAN};
+  return result;
+}
+
 static const float kApertureStops[] = {
     1.0f,  1.1f,  1.2f,  1.4f,  1.6f,  1.8f,  2.0f,  2.2f,  2.5f,  2.8f,
     3.2f,  3.5f,  4.0f,  4.5f,  5.0f,  5.6f,  6.3f,  7.1f,  8.0f,  9.0f,
@@ -145,7 +150,7 @@ static float apertureFromEv(float ev, float shutterSec) {
 }
 
 ExposureResult calculateExposure(float lux, const MeterConfig &cfg) {
-  ExposureResult r = {false, NAN, NAN, NAN, NAN, NAN, NAN, NAN};
+  ExposureResult r = invalidExposureResult();
 
   const float ev100 = ev100FromLux(lux, cfg.calibC);
   if (!isFiniteNumber(ev100)) {
@@ -171,6 +176,14 @@ ExposureResult calculateExposure(float lux, const MeterConfig &cfg) {
   r.apertureSuggested =
       nearestStep(kApertureStops, sizeof(kApertureStops) / sizeof(kApertureStops[0]), ap);
   return r;
+}
+
+ExposureResult calculateExposure(const SensorData &sensorData,
+                                 const MeterConfig &cfg) {
+  if (sensorData.state != SENSOR_STATE_OK) {
+    return invalidExposureResult();
+  }
+  return calculateExposure(sensorData.lux, cfg);
 }
 
 }  // namespace MeterComponent

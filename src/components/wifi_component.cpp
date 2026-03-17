@@ -6,10 +6,6 @@
 #include "../settings.h"
 #include "led_status_component.h"
 
-const char *targetWifiModeText() {
-  return "AP_ONLY";
-}
-
 bool connectWifi() {
   LedStatusComponent::setStage(LedStatusComponent::STAGE_WIFI_CONNECTING);
   LedStatusComponent::setNetworkState(false);

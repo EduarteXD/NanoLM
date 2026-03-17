@@ -22,7 +22,12 @@ static const RangeProfile kRangeProfiles[] = {
 };
 static constexpr size_t kRangeProfileCount =
     sizeof(kRangeProfiles) / sizeof(kRangeProfiles[0]);
+static constexpr size_t FAST_RECOVERY_RANGE_INDEX = 0;  // 1x/100ms
 static constexpr size_t DEFAULT_RANGE_INDEX = 5;  // 25x/200ms
+static constexpr uint16_t kAutoRangeLowThreshold = 120U;
+static constexpr uint8_t kAutoRangeHighThresholdPercent = 92U;
+static constexpr uint8_t kAutoRangeTargetPercent = 72U;
+static constexpr uint16_t kProfileSwitchSettleExtraMs = 25U;
 
 static size_t sRangeIndex = DEFAULT_RANGE_INDEX;
 
@@ -76,6 +81,14 @@ static bool applyProfile(size_t index) {
 
 static RangeProfile currentProfile() {
   return kRangeProfiles[sRangeIndex];
+}
+
+static uint16_t peakChannel(uint16_t full, uint16_t ir) {
+  return (full > ir) ? full : ir;
+}
+
+static float profileSensitivity(const RangeProfile &profile) {
+  return gainToFloat(profile.gain) * static_cast<float>(integToMs(profile.integ));
 }
 
 uint16_t currentIntegrationMs() {
@@ -155,54 +168,14 @@ static float calculateLux(uint16_t ch0, uint16_t ch1, uint8_t gain,
   return lux;
 }
 
-static void autoRangeIfNeeded(uint16_t full, uint16_t ir, float lux,
-                              const RangeProfile &sampleProfile) {
-  if (!AUTO_RANGE_ENABLED) {
-    return;
-  }
-
-  const uint16_t maxCount = maxCountByInteg(sampleProfile.integ);
-  const uint16_t highThreshold = static_cast<uint16_t>(maxCount * 92U / 100U);
-  const uint16_t lowThreshold = 120U;
-
-  const bool tooBright =
-      (lux == -2.0f) || (full >= highThreshold) || (ir >= highThreshold);
-  const bool tooDark = (lux >= 0.0f) && (full < lowThreshold) && (ir < lowThreshold);
-
-  bool changed = false;
-  if (tooBright && sRangeIndex > 0) {
-    changed = applyProfile(sRangeIndex - 1);
-  } else if (tooDark && (sRangeIndex + 1) < kRangeProfileCount) {
-    changed = applyProfile(sRangeIndex + 1);
-  }
-
-  if (changed) {
-    const RangeProfile now = currentProfile();
-    Serial.print("自动量程切换 -> ");
-    Serial.print(gainToX(now.gain));
-    Serial.print("x/");
-    Serial.print(integToMs(now.integ));
-    Serial.println("ms");
-  }
-}
-
-SensorData sampleOnce() {
-  SensorData out = {0, 0, 0, 0.0f, 1, 100, SENSOR_STATE_ERROR, millis()};
-  const RangeProfile profile = currentProfile();
-  out.gainX = gainToX(profile.gain);
-  out.integrationMs = integToMs(profile.integ);
-
-  uint16_t full = 0;
-  uint16_t ir = 0;
-  if (!readChannels(full, ir)) {
-    out.state = SENSOR_STATE_ERROR;
-    return out;
-  }
-
+static void assignSample(SensorData &out, uint16_t full, uint16_t ir,
+                         const RangeProfile &profile, float rawLux) {
   out.full = full;
   out.ir = ir;
   out.visible = (full > ir) ? (full - ir) : 0;
-  const float rawLux = calculateLux(full, ir, profile.gain, profile.integ);
+  out.gainX = gainToX(profile.gain);
+  out.integrationMs = integToMs(profile.integ);
+  out.sampleMs = millis();
   out.lux = rawLux;
 
   if (rawLux == -2.0f) {
@@ -213,6 +186,169 @@ SensorData sampleOnce() {
     out.lux = 0.0f;
   } else {
     out.state = SENSOR_STATE_OK;
+  }
+}
+
+static bool readChannelsWithTimeout(uint16_t &ch0, uint16_t &ch1,
+                                    uint16_t timeoutMs) {
+  const uint32_t startMs = millis();
+  while ((millis() - startMs) <= timeoutMs) {
+    if (readChannels(ch0, ch1)) {
+      return true;
+    }
+    delay(5);
+  }
+  return false;
+}
+
+static bool sampleAfterProfileSwitch(size_t index, SensorData &out) {
+  if (!applyProfile(index)) {
+    return false;
+  }
+
+  uint16_t full = 0;
+  uint16_t ir = 0;
+  const RangeProfile profile = kRangeProfiles[index];
+  const uint16_t waitMs =
+      integToMs(profile.integ) + kProfileSwitchSettleExtraMs;
+  if (!readChannelsWithTimeout(full, ir, waitMs)) {
+    return false;
+  }
+
+  const float rawLux = calculateLux(full, ir, profile.gain, profile.integ);
+  assignSample(out, full, ir, profile, rawLux);
+  return true;
+}
+
+static bool sampleTooBright(uint16_t full, uint16_t ir, float lux,
+                            const RangeProfile &sampleProfile) {
+  const uint16_t maxCount = maxCountByInteg(sampleProfile.integ);
+  const uint16_t highThreshold = static_cast<uint16_t>(
+      maxCount * kAutoRangeHighThresholdPercent / 100U);
+  return (lux == -2.0f) || (full >= highThreshold) || (ir >= highThreshold);
+}
+
+static bool sampleTooDark(uint16_t full, uint16_t ir, float lux) {
+  return (lux >= 0.0f) && (full < kAutoRangeLowThreshold) &&
+         (ir < kAutoRangeLowThreshold);
+}
+
+static size_t estimateRangeIndex(uint16_t full, uint16_t ir,
+                                 const RangeProfile &sampleProfile) {
+  const uint16_t peak = peakChannel(full, ir);
+  if (peak == 0U) {
+    return kRangeProfileCount - 1;
+  }
+
+  const float sampleSensitivity = profileSensitivity(sampleProfile);
+  if (sampleSensitivity <= 0.0f) {
+    return sRangeIndex;
+  }
+
+  size_t targetIndex = FAST_RECOVERY_RANGE_INDEX;
+  for (size_t i = 0; i < kRangeProfileCount; ++i) {
+    const RangeProfile candidate = kRangeProfiles[i];
+    const float predictedPeak =
+        static_cast<float>(peak) * profileSensitivity(candidate) /
+        sampleSensitivity;
+    const float targetPeak =
+        static_cast<float>(maxCountByInteg(candidate.integ)) *
+        static_cast<float>(kAutoRangeTargetPercent) / 100.0f;
+    if (predictedPeak <= targetPeak) {
+      targetIndex = i;
+      continue;
+    }
+    break;
+  }
+
+  return targetIndex;
+}
+
+static void logRangeSwitch(const char *reason, const RangeProfile &profile) {
+  Serial.print(reason);
+  Serial.print(" -> ");
+  Serial.print(gainToX(profile.gain));
+  Serial.print("x/");
+  Serial.print(integToMs(profile.integ));
+  Serial.println("ms");
+}
+
+static void autoRangeIfNeeded(uint16_t full, uint16_t ir, float lux,
+                              const RangeProfile &sampleProfile) {
+  if (!AUTO_RANGE_ENABLED) {
+    return;
+  }
+
+  const bool tooBright = sampleTooBright(full, ir, lux, sampleProfile);
+  const bool tooDark = sampleTooDark(full, ir, lux);
+  if (!tooBright && !tooDark) {
+    return;
+  }
+
+  size_t targetIndex = sRangeIndex;
+  if (tooBright && (lux == -2.0f)) {
+    targetIndex = FAST_RECOVERY_RANGE_INDEX;
+  } else {
+    targetIndex = estimateRangeIndex(full, ir, sampleProfile);
+  }
+
+  if (targetIndex == sRangeIndex) {
+    return;
+  }
+  if (!applyProfile(targetIndex)) {
+    return;
+  }
+
+  logRangeSwitch("自动量程切换", currentProfile());
+}
+
+static void recoverFromSaturation(SensorData &out) {
+  if (!AUTO_RANGE_ENABLED || sRangeIndex == FAST_RECOVERY_RANGE_INDEX) {
+    return;
+  }
+
+  Serial.println("自动量程过曝，切到 1x/100ms 快速补测");
+
+  SensorData recovery = {0, 0, 0, 0.0f, 1, 100, SENSOR_STATE_ERROR, millis()};
+  if (!sampleAfterProfileSwitch(FAST_RECOVERY_RANGE_INDEX, recovery)) {
+    Serial.println("自动量程快速补测失败");
+    return;
+  }
+
+  out = recovery;
+  if (recovery.state != SENSOR_STATE_OK) {
+    return;
+  }
+
+  const RangeProfile recoveryProfile = kRangeProfiles[FAST_RECOVERY_RANGE_INDEX];
+  const size_t targetIndex =
+      estimateRangeIndex(recovery.full, recovery.ir, recoveryProfile);
+  if (targetIndex == sRangeIndex) {
+    return;
+  }
+  if (!applyProfile(targetIndex)) {
+    return;
+  }
+  logRangeSwitch("自动量程快速补测后预切换", currentProfile());
+}
+
+SensorData sampleOnce() {
+  SensorData out = {0, 0, 0, 0.0f, 1, 100, SENSOR_STATE_ERROR, millis()};
+  const RangeProfile profile = currentProfile();
+
+  uint16_t full = 0;
+  uint16_t ir = 0;
+  if (!readChannels(full, ir)) {
+    out.state = SENSOR_STATE_ERROR;
+    return out;
+  }
+
+  const float rawLux = calculateLux(full, ir, profile.gain, profile.integ);
+  assignSample(out, full, ir, profile, rawLux);
+
+  if (rawLux == -2.0f) {
+    recoverFromSaturation(out);
+    return out;
   }
 
   autoRangeIfNeeded(full, ir, rawLux, profile);

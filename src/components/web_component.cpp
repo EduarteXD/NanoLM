@@ -1,6 +1,5 @@
 ﻿#include "web_component.h"
 
-#include <cmath>
 #include <WiFi.h>
 
 #include "../app/app_runtime.h"
@@ -154,10 +153,7 @@ static void handleApiData() {
     return;
   }
 
-  ExposureResult ex = {false, NAN, NAN, NAN, NAN, NAN, NAN, NAN};
-  if (sd.state == SENSOR_STATE_OK) {
-    ex = MeterComponent::calculateExposure(sd.lux, cfg);
-  }
+  const ExposureResult ex = MeterComponent::calculateExposure(sd, cfg);
   const char *wifiMode = AppRuntime::wifiApMode() ? "AP" : "DOWN";
 
   String json;

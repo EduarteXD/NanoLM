@@ -1,13 +1,13 @@
-﻿#include "sensor_task.h"
+#include "sensor_sampling_task.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "../components/led_status_component.h"
+#include "../components/sensor_component.h"
 #include "../core/state_store.h"
-#include "led_status_component.h"
-#include "sensor_component.h"
 
-void sensorTask(void *param) {
+void sensorSamplingTask(void *param) {
   (void)param;
 
   vTaskDelay(pdMS_TO_TICKS(SensorComponent::currentIntegrationMs() + 60U));
