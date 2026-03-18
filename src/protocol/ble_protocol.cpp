@@ -119,6 +119,21 @@ const char kMeterCharacteristicUuid[] =
 const char kConfigCharacteristicUuid[] =
     "7f29e500-3ad2-4f7e-9d58-9b66b528c004";
 
+// BLE 二进制数据包统一约定：
+// - 按 characteristic 区分包类型，没有额外的包头、长度字段或校验字段。
+// - 所有多字节整数都使用 little-endian 编码。
+// - payload 长度固定，发送端和接收端都必须使用对应的固定长度。
+//
+// Sensor characteristic payload（20 bytes）：
+//   [0]      version                协议版本，固定为 BLE_PROTOCOL_VERSION
+//   [1]      state                  传感器状态，取值见 SENSOR_STATE_*
+//   [2..3]   gainX                  uint16，当前增益倍数
+//   [4..5]   integrationMs          uint16，积分时间，单位 ms
+//   [6..7]   full                   uint16，TSL2591 full-spectrum 原始值
+//   [8..9]   ir                     uint16，TSL2591 IR 原始值
+//   [10..11] visible                uint16，可见光通道值
+//   [12..15] luxMilli               uint32，lux * 1000
+//   [16..19] sampleMs               uint32，采样时间字段，单位 ms
 bool encodeSensorPacket(const SensorData &sensorData, uint8_t *buffer, size_t size) {
   if (buffer == nullptr || size != kSensorPacketSize) {
     return false;
@@ -137,6 +152,17 @@ bool encodeSensorPacket(const SensorData &sensorData, uint8_t *buffer, size_t si
   return true;
 }
 
+// Meter characteristic payload（20 bytes）：
+//   [0]      version                协议版本，固定为 BLE_PROTOCOL_VERSION
+//   [1]      flags                  bit0 = valid，其余位保留
+//   [2]      mode                   测光模式，取值见 METER_MODE_*
+//   [3]      reserved               保留位，当前固定写 0
+//   [4..5]   ev100Centi             int16，EV100 * 100
+//   [6..7]   evIsoCenti             int16，按当前 ISO 换算后的 EV * 100
+//   [8..9]   targetEvCenti          int16，目标 EV * 100
+//   [10..13] shutterFromApertureUs  uint32，由光圈推导出的快门时间，单位 us
+//   [14..17] shutterSuggestedUs     uint32，建议快门时间，单位 us
+//   [18..19] apertureSuggestedTenths uint16，建议光圈 * 10
 bool encodeMeterPacket(const MeterConfig &config, const ExposureResult &exposure,
                        uint8_t *buffer, size_t size) {
   if (buffer == nullptr || size != kMeterPacketSize) {
@@ -157,6 +183,14 @@ bool encodeMeterPacket(const MeterConfig &config, const ExposureResult &exposure
   return true;
 }
 
+// Config characteristic payload（14 bytes，可由上位机写入，也可按同格式回传）：
+//   [0]      version                协议版本，固定为 BLE_PROTOCOL_VERSION
+//   [1]      mode                   测光模式，取值见 METER_MODE_*
+//   [2..3]   iso                    uint16，ISO
+//   [4..5]   apertureTenths         uint16，光圈值 * 10
+//   [6..9]   shutterMicros          uint32，快门时间，单位 us
+//   [10..11] expCompTenths          int16，曝光补偿 * 10
+//   [12..13] calibC                 uint16，测光校准常数 C
 bool encodeConfigPacket(const MeterConfig &config, uint8_t *buffer, size_t size) {
   if (buffer == nullptr || size != kConfigPacketSize) {
     return false;
@@ -173,6 +207,8 @@ bool encodeConfigPacket(const MeterConfig &config, uint8_t *buffer, size_t size)
   return true;
 }
 
+// decodeConfigPacket 按上面的固定偏移读取字段，并校验模式和数值范围，
+// 只有完全合法的配置包才会写入输出结构体。
 bool decodeConfigPacket(const uint8_t *buffer, size_t size, MeterConfig &out) {
   if (buffer == nullptr || size != kConfigPacketSize) {
     return false;
@@ -217,6 +253,9 @@ bool decodeConfigPacket(const uint8_t *buffer, size_t size, MeterConfig &out) {
   return true;
 }
 
+// Device info characteristic
+// name=<deviceName>;device_id=<deviceId>;proto=<version>;service=<uuid>;
+// sensor=20;meter=20;config=14
 std::string buildDeviceInfoValue(const std::string &deviceName,
                                  const std::string &deviceId) {
   std::string value = "name=";

@@ -89,11 +89,11 @@ void beginBlePipeline() {
   }
 
   if (!BleComponent::begin()) {
-    Serial.println("BLE 初始化失败，iOS 客户端暂不可用");
+    Serial.println("BLE 初始化失败，客户端暂不可用");
     return;
   }
 
-  Serial.println("BLE 已启动，等待 iOS 客户端连接");
+  Serial.println("BLE 已启动，等待客户端连接");
 }
 
 }  // namespace
@@ -115,7 +115,6 @@ void setup() {
   scanI2cBuses();
 
   if (ENABLE_EPD_SELF_TEST_ON_BOOT) {
-    Serial.println("EPD 自检: 启动 4-wire SPI(8-bit, DC独立) + PCF8574 显示测试图案");
     if (EpdComponent::runBootSelfTest()) {
       Serial.println("EPD 自检: 显示完成");
     } else {
