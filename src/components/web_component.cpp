@@ -4,7 +4,7 @@
 
 #include "../app/app_runtime.h"
 #include "../core/math_utils.h"
-#include "../web_ui_zh.h"
+#include "../web_ui.h"
 #include "../core/state_store.h"
 #include "../settings.h"
 #include "meter_component.h"
@@ -86,7 +86,7 @@ namespace WebComponent
   static void handleRoot()
   {
     AppRuntime::server().sendHeader("Cache-Control", "no-store");
-    AppRuntime::server().send_P(200, "text/html; charset=utf-8", WEB_UI_ZH);
+    AppRuntime::server().send_P(200, "text/html; charset=utf-8", WEB_UI);
   }
 
   static void handleApiConfig()
