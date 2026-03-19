@@ -20,7 +20,6 @@ namespace EpdComponent
   static constexpr uint32_t EPD_SPI_FREQ_HZ = 2000000U;
 
   static constexpr uint16_t EPD_PCF_SETTLE_US = 80U;
-  // DC 建立时间，保持在安全但不过长的区间，便于验证是否由延时过大导致。
   static constexpr uint16_t EPD_DC_SETUP_US = 20U;
   static constexpr uint16_t EPD_CS_SETUP_US = 2U;
   static constexpr uint16_t EPD_CS_HOLD_US = 2U;
@@ -31,8 +30,6 @@ namespace EpdComponent
   static constexpr uint8_t EPD_BUSY_STABLE_SAMPLES = 2U;
   static constexpr uint16_t EPD_BUSY_POLL_INTERVAL_MS = 3U;
   static constexpr uint16_t EPD_POWER_STABILIZE_MS = 20U;
-  // true: BUSY=1 表示忙(ready=0)；false: BUSY=0 表示忙(ready=1)
-  // 官方 demo 使用的是 high-active（1=BUSY, 0=READY）。
   static constexpr bool EPD_BUSY_ACTIVE_HIGH = true;
   static constexpr uint16_t EPD_DC_DEBUG_PULSE_MS = 2U;
   static constexpr bool EPD_DIAG_PULSE_ON_BOOT = false;

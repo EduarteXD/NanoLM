@@ -10,7 +10,7 @@
 #include "../core/state_store.h"
 #include "../core/system_diagnostics.h"
 #include "../settings.h"
-#include "../components/epd_component.h"
+// #include "../components/epd_component.h"
 #include "../components/ble_component.h"
 #include "../components/led_status_component.h"
 #include "../components/sensor_component.h"
@@ -130,17 +130,17 @@ namespace AppController
     Wire.begin(SystemResources::PIN_I2C_SDA, SystemResources::PIN_I2C_SCL);
     scanI2cBuses();
 
-    if (ENABLE_EPD_SELF_TEST_ON_BOOT)
-    {
-      if (EpdComponent::runBootSelfTest())
-      {
-        Serial.println("EPD 自检: 显示完成");
-      }
-      else
-      {
-        Serial.println("EPD 自检: 失败(不影响测光表功能)");
-      }
-    }
+    // if (ENABLE_EPD_SELF_TEST_ON_BOOT)
+    // {
+    //   if (EpdComponent::runBootSelfTest())
+    //   {
+    //     Serial.println("EPD 自检: 显示完成");
+    //   }
+    //   else
+    //   {
+    //     Serial.println("EPD 自检: 失败(不影响测光表功能)");
+    //   }
+    // }
 
     beginSensorPipeline();
     beginNetworkPipeline();

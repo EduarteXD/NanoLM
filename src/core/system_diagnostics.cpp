@@ -3,7 +3,7 @@
 #include <Wire.h>
 
 #include "../system_resources.h"
-#include "../components/epd_component.h"
+// #include "../components/epd_component.h"
 
 void printIoTable()
 {
@@ -64,55 +64,55 @@ static void scanSensorI2cBus()
   Serial.println(" 个设备");
 }
 
-static void scanEpdI2cBus()
-{
-  Serial.print("I2C1 扫描开始 (SoftWire SDA=GPIO");
-  Serial.print(SystemResources::PIN_EPD_I2C_SDA);
-  Serial.print(", SCL=GPIO");
-  Serial.print(SystemResources::PIN_EPD_I2C_SCL);
-  Serial.println(")");
+// static void scanEpdI2cBus()
+// {
+//   Serial.print("I2C1 扫描开始 (SoftWire SDA=GPIO");
+//   Serial.print(SystemResources::PIN_EPD_I2C_SDA);
+//   Serial.print(", SCL=GPIO");
+//   Serial.print(SystemResources::PIN_EPD_I2C_SCL);
+//   Serial.println(")");
 
-  if (!EpdComponent::initPcfI2cBus())
-  {
-    Serial.println("I2C1 扫描失败: SoftWire 初始化失败");
-    return;
-  }
+//   if (!EpdComponent::initPcfI2cBus())
+//   {
+//     Serial.println("I2C1 扫描失败: SoftWire 初始化失败");
+//     return;
+//   }
 
-  uint8_t found = 0;
-  for (int addr = 0x03; addr <= 0x77; ++addr)
-  {
-    if (!EpdComponent::probeAddress(static_cast<uint8_t>(addr)))
-    {
-      continue;
-    }
+//   uint8_t found = 0;
+//   for (int addr = 0x03; addr <= 0x77; ++addr)
+//   {
+//     if (!EpdComponent::probeAddress(static_cast<uint8_t>(addr)))
+//     {
+//       continue;
+//     }
 
-    ++found;
-    Serial.print(" - 发现设备: 0x");
-    if (addr < 16)
-    {
-      Serial.print('0');
-    }
-    Serial.print(addr, HEX);
-    if (addr == SystemResources::I2C_ADDR_EPD_PCF8574)
-    {
-      Serial.print(" (PCF8574)");
-    }
-    Serial.println();
-  }
+//     ++found;
+//     Serial.print(" - 发现设备: 0x");
+//     if (addr < 16)
+//     {
+//       Serial.print('0');
+//     }
+//     Serial.print(addr, HEX);
+//     if (addr == SystemResources::I2C_ADDR_EPD_PCF8574)
+//     {
+//       Serial.print(" (PCF8574)");
+//     }
+//     Serial.println();
+//   }
 
-  if (found == 0)
-  {
-    Serial.println("I2C1 扫描完成: 未发现设备");
-    return;
-  }
+//   if (found == 0)
+//   {
+//     Serial.println("I2C1 扫描完成: 未发现设备");
+//     return;
+//   }
 
-  Serial.print("I2C1 扫描完成: 共发现 ");
-  Serial.print(found);
-  Serial.println(" 个设备");
-}
+//   Serial.print("I2C1 扫描完成: 共发现 ");
+//   Serial.print(found);
+//   Serial.println(" 个设备");
+// }
 
 void scanI2cBuses()
 {
   scanSensorI2cBus();
-  scanEpdI2cBus();
+  // scanEpdI2cBus();
 }
