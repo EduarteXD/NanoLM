@@ -366,7 +366,7 @@ namespace SensorComponent
       return;
     }
 
-    Serial.println("自动量程过曝，切到 1x/100ms 快速补测");
+    Serial.println("自动量程过曝");
 
     SensorData recovery = {0, 0, 0, 0.0f, 1, 100, SENSOR_STATE_ERROR, millis()};
     if (!sampleAfterProfileSwitch(FAST_RECOVERY_RANGE_INDEX, recovery))

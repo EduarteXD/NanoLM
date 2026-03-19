@@ -26,6 +26,16 @@ namespace AppController
 
     SensorData makeSensorErrorData()
     {
+      // {
+      //  uint16_t full;
+      //  uint16_t ir;
+      //  uint16_t visible;
+      //  float lux;
+      //  uint16_t gainX;
+      //  uint16_t integrationMs;
+      //  uint8_t state;
+      //  uint32_t sampleMs;
+      // }
       SensorData data = {0, 0, 0, 0.0f, 1, 100, SENSOR_STATE_ERROR, millis()};
       return data;
     }

@@ -87,7 +87,6 @@ namespace LedStatusComponent
   void update()
   {
     const uint32_t now = millis();
-    // 非阻塞动画帧率限制：约 50 FPS，避免过高 show() 频率。
     if ((now - sLastFrameMs) < 20U)
     {
       return;
