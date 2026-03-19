@@ -2,10 +2,11 @@
 
 #include <Arduino.h>
 
-namespace EpdComponent {
+namespace EpdComponent
+{
 
-bool initPcfI2cBus();
-bool probeAddress(uint8_t addr);
-bool runBootSelfTest();
+  bool initPcfI2cBus();
+  bool probeAddress(uint8_t addr);
+  bool runBootSelfTest();
 
-}  // namespace EpdComponent
+}

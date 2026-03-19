@@ -2,12 +2,14 @@
 
 #include <Arduino.h>
 
-struct RangeProfile {
+struct RangeProfile
+{
   uint8_t gain;
   uint8_t integ;
 };
 
-struct SensorData {
+struct SensorData
+{
   uint16_t full;
   uint16_t ir;
   uint16_t visible;
@@ -18,7 +20,8 @@ struct SensorData {
   uint32_t sampleMs;
 };
 
-struct MeterConfig {
+struct MeterConfig
+{
   uint16_t iso;
   float aperture;
   float shutterSec;
@@ -27,7 +30,8 @@ struct MeterConfig {
   uint8_t mode;
 };
 
-struct ExposureResult {
+struct ExposureResult
+{
   bool valid;
   float ev100;
   float evIso;

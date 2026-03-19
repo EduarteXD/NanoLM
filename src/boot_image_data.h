@@ -1,11 +1,12 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern const unsigned char g_boot_image_data[];
-unsigned int get_boot_image_data_len(void);
+  extern const unsigned char g_boot_image_data[];
+  unsigned int get_boot_image_data_len(void);
 
 #ifdef __cplusplus
 }

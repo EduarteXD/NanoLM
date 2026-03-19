@@ -2,10 +2,12 @@
 
 #include "app/app_controller.h"
 
-void setup() {
+void setup()
+{
   AppController::setup();
 }
 
-void loop() {
+void loop()
+{
   AppController::loop();
 }

@@ -4,11 +4,12 @@
 
 #include "../app_types.h"
 
-namespace SensorComponent {
+namespace SensorComponent
+{
 
-bool init();
-SensorData sampleOnce();
-uint16_t currentIntegrationMs();
-uint16_t recommendedDelayMs();
+  bool init();
+  SensorData sampleOnce();
+  uint16_t currentIntegrationMs();
+  uint16_t recommendedDelayMs();
 
-}  // namespace SensorComponent
+}

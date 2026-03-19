@@ -20,7 +20,7 @@ static const char *BLE_DEVICE_NAME = "NanoLm";
 static constexpr uint8_t BLE_PROTOCOL_VERSION = 1;
 
 // -------------------- TSL2591 寄存器 --------------------
-static constexpr uint8_t TSL2591_CMD = 0xA0;  // 命令位 + 普通寄存器访问
+static constexpr uint8_t TSL2591_CMD = 0xA0; // 命令位 + 普通寄存器访问
 static constexpr uint8_t REG_ENABLE = 0x00;
 static constexpr uint8_t REG_CONTROL = 0x01;
 static constexpr uint8_t REG_ID = 0x12;

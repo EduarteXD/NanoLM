@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-namespace WebComponent {
+namespace WebComponent
+{
 
-void beginServer();
+  void beginServer();
 
-}  // namespace WebComponent
+}

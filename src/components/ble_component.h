@@ -1,8 +1,9 @@
 #pragma once
 
-namespace BleComponent {
+namespace BleComponent
+{
 
-bool begin();
-void poll();
+  bool begin();
+  void poll();
 
-}  // namespace BleComponent
+}

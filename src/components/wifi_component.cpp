@@ -6,14 +6,16 @@
 #include "../settings.h"
 #include "led_status_component.h"
 
-bool connectWifi() {
+bool connectWifi()
+{
   LedStatusComponent::setStage(LedStatusComponent::STAGE_WIFI_CONNECTING);
   LedStatusComponent::setNetworkState(false);
   LedStatusComponent::update();
 
   WiFi.disconnect(true, true);
   WiFi.mode(WIFI_AP);
-  if (!WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS)) {
+  if (!WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS))
+  {
     Serial.println("AP 启动失败");
     AppRuntime::setWifiApMode(false);
     LedStatusComponent::setNetworkState(false);

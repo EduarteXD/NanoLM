@@ -1,8 +1,9 @@
 #pragma once
 
-namespace AppController {
+namespace AppController
+{
 
-void setup();
-void loop();
+  void setup();
+  void loop();
 
-}  // namespace AppController
+}

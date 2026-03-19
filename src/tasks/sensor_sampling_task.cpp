@@ -7,12 +7,14 @@
 #include "../components/sensor_component.h"
 #include "../core/state_store.h"
 
-void sensorSamplingTask(void *param) {
+void sensorSamplingTask(void *param)
+{
   (void)param;
 
   vTaskDelay(pdMS_TO_TICKS(SensorComponent::currentIntegrationMs() + 60U));
 
-  for (;;) {
+  for (;;)
+  {
     const SensorData sd = SensorComponent::sampleOnce();
     storeSensorData(sd);
     LedStatusComponent::setSensorState(sd.state);

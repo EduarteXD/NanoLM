@@ -6,22 +6,23 @@
 
 #include "../app_types.h"
 
-namespace AppRuntime {
+namespace AppRuntime
+{
 
-bool initialize();
+  bool initialize();
 
-SensorData &sensorData();
-MeterConfig &meterConfig();
+  SensorData &sensorData();
+  MeterConfig &meterConfig();
 
-WebServer &server();
+  WebServer &server();
 
-SemaphoreHandle_t sensorMutex();
-SemaphoreHandle_t configMutex();
+  SemaphoreHandle_t sensorMutex();
+  SemaphoreHandle_t configMutex();
 
-TaskHandle_t sensorSamplingTaskHandle();
-void setSensorSamplingTaskHandle(TaskHandle_t handle);
+  TaskHandle_t sensorSamplingTaskHandle();
+  void setSensorSamplingTaskHandle(TaskHandle_t handle);
 
-bool wifiApMode();
-void setWifiApMode(bool apMode);
+  bool wifiApMode();
+  void setWifiApMode(bool apMode);
 
-}  // namespace AppRuntime
+}

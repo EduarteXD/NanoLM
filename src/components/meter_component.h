@@ -4,13 +4,14 @@
 
 #include "../app_types.h"
 
-namespace MeterComponent {
+namespace MeterComponent
+{
 
-bool parseShutterSeconds(const String &text, float &secondsOut);
-String formatAperture(float aperture);
-String formatShutter(float seconds);
-ExposureResult calculateExposure(float lux, const MeterConfig &cfg);
-ExposureResult calculateExposure(const SensorData &sensorData,
-                                 const MeterConfig &cfg);
+  bool parseShutterSeconds(const String &text, float &secondsOut);
+  String formatAperture(float aperture);
+  String formatShutter(float seconds);
+  ExposureResult calculateExposure(float lux, const MeterConfig &cfg);
+  ExposureResult calculateExposure(const SensorData &sensorData,
+                                   const MeterConfig &cfg);
 
-}  // namespace MeterComponent
+}

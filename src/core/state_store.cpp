@@ -4,12 +4,15 @@
 
 #include "../app/app_runtime.h"
 
-bool storeSensorData(const SensorData &in) {
+bool storeSensorData(const SensorData &in)
+{
   SemaphoreHandle_t mutex = AppRuntime::sensorMutex();
-  if (mutex == nullptr) {
+  if (mutex == nullptr)
+  {
     return false;
   }
-  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE)
+  {
     return false;
   }
 
@@ -19,12 +22,15 @@ bool storeSensorData(const SensorData &in) {
   return true;
 }
 
-bool loadSensorData(SensorData &out) {
+bool loadSensorData(SensorData &out)
+{
   SemaphoreHandle_t mutex = AppRuntime::sensorMutex();
-  if (mutex == nullptr) {
+  if (mutex == nullptr)
+  {
     return false;
   }
-  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE)
+  {
     return false;
   }
 
@@ -33,12 +39,15 @@ bool loadSensorData(SensorData &out) {
   return true;
 }
 
-bool loadMeterConfig(MeterConfig &out) {
+bool loadMeterConfig(MeterConfig &out)
+{
   SemaphoreHandle_t mutex = AppRuntime::configMutex();
-  if (mutex == nullptr) {
+  if (mutex == nullptr)
+  {
     return false;
   }
-  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE)
+  {
     return false;
   }
 
@@ -47,12 +56,15 @@ bool loadMeterConfig(MeterConfig &out) {
   return true;
 }
 
-bool saveMeterConfig(const MeterConfig &in) {
+bool saveMeterConfig(const MeterConfig &in)
+{
   SemaphoreHandle_t mutex = AppRuntime::configMutex();
-  if (mutex == nullptr) {
+  if (mutex == nullptr)
+  {
     return false;
   }
-  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(20)) != pdTRUE)
+  {
     return false;
   }
 
